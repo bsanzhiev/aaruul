@@ -1,14 +1,14 @@
 @host = 127.0.0.0:8099
 
 // Register User
-POST http://{{host}}/api/register HTTP/1.1
+POST http://{{host}}/api/v1/register HTTP/1.1
 content-type: application/json
     
 {
-    "first_name": "Kuuquish",
-    "second_name": "Muuqish",
-    "username": "kuuquish.muuqish",
-    "email": "kuuquish@go.com",
+    "first_name": "Ooshish",
+    "second_name": "Myrgiz",
+    "username": "ooshish.myrgiz",
+    "email": "mooshish@go.com",
     "password": "123465789"
 }
 

@@ -1,11 +1,11 @@
 @host = 127.0.0.0:8099
 
-// Generate JWT
-POST http://{{host}}/api/v1/token HTTP/1.1
+// Register User
+POST http://{{host}}/api/v1/login HTTP/1.1
 content-type: application/json
     
 {
-    "email": "kuuquish@go.com",
+    "email": "mooshish@go.com",
     "password": "123465789"
 }
 

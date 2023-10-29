@@ -40,10 +40,11 @@ func Ping(c *gin.Context) {
 
 func initRouter() *gin.Engine {
 	router := gin.Default()
-	api := router.Group("/api")
+	api := router.Group("/api/v1")
 	{
 		api.POST("/token", controllers.GenerateToken)
 		api.POST("/register", controllers.RegisterUser)
+		api.POST("/login", controllers.LoginUser)
 		secured := api.Group("/secured").Use(middlewares.Auth())
 		{
 			secured.GET("/pong", controllers.Pong)
