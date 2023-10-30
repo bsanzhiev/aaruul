@@ -17,6 +17,8 @@ type JWTClaim struct {
 
 func GenerateJWT(email string, username string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
+
+	// генерируем полезные данные, хранящиеся в токене
 	claims := &JWTClaim{
 		Email:    email,
 		Username: username,
@@ -24,6 +26,7 @@ func GenerateJWT(email string, username string) (tokenString string, err error) 
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
+	
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString(jwtKey)
 	return

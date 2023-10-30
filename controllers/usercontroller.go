@@ -32,13 +32,13 @@ func RegisterUser(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
-	type ResponseData struct {
-		UserID   uint   `json:"userID"`
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Token    string `json:"token"`
+	type LoginResponse struct {
+		UserID      uint   `json:"userID"`
+		Email       string `json:"email"`
+		Username    string `json:"username"`
+		AccessToken string `json:"token"`
 	}
-	var params models.UserLogin
+	var params models.LoginRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		c.Abort()
@@ -66,10 +66,10 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ResponseData{
-		UserID:   user.ID,
-		Email:    user.Email,
-		Username: user.Username,
-		Token:    token,
+	c.JSON(http.StatusOK, LoginResponse{
+		UserID:      user.ID,
+		Email:       user.Email,
+		Username:    user.Username,
+		AccessToken: token,
 	})
 }

@@ -14,7 +14,7 @@ type User struct {
 	Password   string `gorm:"column:password; not null" json:"password"`
 }
 
-type UserLogin struct {
+type LoginRequest struct {
 	Email string `json:"email"`
 	Password string `json:"password"`
 }
