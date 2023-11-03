@@ -2,8 +2,9 @@ package auth
 
 import (
 	"errors"
-	jwt "github.com/dgrijalva/jwt-go"
 	"time"
+
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 var jwtKey = []byte("supersecretkey")
@@ -26,7 +27,7 @@ func GenerateJWT(email string, username string) (tokenString string, err error) 
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString(jwtKey)
 	return
@@ -53,4 +54,20 @@ func ValidateToken(signedToken string) (err error) {
 		return
 	}
 	return
+}
+
+func ParseToken(tokenString string) (*JWTClaim, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JWTClaim{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*JWTClaim)
+	if !ok || !token.Valid {
+		return nil, errors.New("Invalid token")
+	}
+
+	return claims, nil
 }

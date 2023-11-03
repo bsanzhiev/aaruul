@@ -7,15 +7,17 @@ import (
 
 type User struct {
 	gorm.Model
-	Email      string `gorm:"index:email,unique;not null" json:"email"`
-	FirstName  string `gorm:"column:first_name;not null" json:"first_name"`
-	SecondName string `gorm:"column:second_name;not null" json:"second_name"`
-	Username   string `gorm:"index:username, unique;not null" json:"username"`
-	Password   string `gorm:"column:password; not null" json:"password"`
+	Email         string `gorm:"index:email,unique;not null" json:"email"`
+	FirstName     string `gorm:"column:first_name;not null" json:"first_name"`
+	SecondName    string `gorm:"column:second_name;not null" json:"second_name"`
+	Username      string `gorm:"index:username,unique;not null" json:"username"`
+	Password      string `gorm:"column:password; not null" json:"password"`
+	Phone         string `gorm:"index:phone;unique" json:"phone"`
+	FirebaseToken string `gorm:"column:firebase_token" json:"firebase_token"`
 }
 
 type LoginRequest struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 

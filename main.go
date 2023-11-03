@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/bsanzhiev/tsurhai/controllers"
 	"github.com/bsanzhiev/tsurhai/database"
 	"github.com/bsanzhiev/tsurhai/middlewares"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"log"
 )
 
 func main() {
@@ -21,13 +23,18 @@ func main() {
 	database.Connect()
 	database.Migrate()
 
-	//app := gin.Default()
-	app := initRouter()
+	app := gin.Default()
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"} // Укажите домен вашего клиентского приложения
+	config.AllowMethods = []string{"*"}
+	app.Use(cors.New(config))
+
+	initRouter(app)
 	app.GET("/ping", Ping)
 
 	log.Fatalln(
 		app.Run(
-			fmt.Sprintf("0.0.0.0:%d", viper.GetInt("APP_PORT")),
+			fmt.Sprintf("127.0.0.0:%d", viper.GetInt("APP_PORT")),
 		),
 	)
 }
@@ -38,17 +45,19 @@ func Ping(c *gin.Context) {
 	})
 }
 
-func initRouter() *gin.Engine {
-	router := gin.Default()
-	api := router.Group("/api/v1")
+func initRouter(app *gin.Engine) {
+
+	api := app.Group("/auth")
 	{
-		api.POST("/token", controllers.GenerateToken)
+		api.POST("/test-token", controllers.GenerateToken)
 		api.POST("/register", controllers.RegisterUser)
 		api.POST("/login", controllers.LoginUser)
-		secured := api.Group("/secured").Use(middlewares.Auth())
-		{
-			secured.GET("/pong", controllers.Pong)
-		}
+
 	}
-	return router
+	api = app.Group("/api/v1")
+	api.Use(middlewares.Auth())
+	{
+		api.GET("/pong", controllers.Pong)
+		api.GET("/profile", controllers.ProfileUser)
+	}
 }
