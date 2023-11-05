@@ -25,8 +25,10 @@ func main() {
 
 	app := gin.Default()
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"*"} // Укажите домен вашего клиентского приложения
+	config.AllowOrigins = []string{"*"}
 	config.AllowMethods = []string{"*"}
+	config.AllowCredentials = true
+	config.AllowHeaders = []string{"*"}
 	app.Use(cors.New(config))
 
 	initRouter(app)
