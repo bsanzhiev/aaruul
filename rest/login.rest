@@ -5,7 +5,7 @@ POST http://{{host}}/auth/login HTTP/1.1
 content-type: application/json
     
 {
-    "email": "kuuquish@go.com",
+    "email": "mooshish@go.com",
     "password": "123465789"
 }
 
