@@ -31,8 +31,8 @@ func main() {
 	config.AllowHeaders = []string{"*"}
 	app.Use(cors.New(config))
 
-	initRouter(app)
 	app.GET("/ping", Ping)
+	initRouter(app)
 
 	log.Fatalln(
 		app.Run(

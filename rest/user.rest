@@ -5,10 +5,10 @@ POST http://{{host}}/auth/register HTTP/1.1
 content-type: application/json
     
 {
-    "first_name": "Ooshish",
-    "second_name": "Myrgiz",
-    "username": "ooshish.myrgiz",
-    "email": "mooshish@go.com",
+    "first_name": "Patrick",
+    "second_name": "Bateman",
+    "username": "pat.bateman",
+    "email": "p.bateman@go.com",
     "password": "123465789"
 }
 

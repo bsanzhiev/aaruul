@@ -10,6 +10,11 @@ import (
 )
 
 func RegisterUser(c *gin.Context) {
+	type RegisterResponse struct {
+		UserID   uint   `json:"userID"`
+		Email    string `json:"email"`
+		Username string `json:"username"`
+	}
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -17,6 +22,7 @@ func RegisterUser(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
 	if err := user.HashPassword(user.Password); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		c.Abort()
@@ -28,7 +34,11 @@ func RegisterUser(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"userID": user.ID, "email": user.Email, "username": user.Username})
+	c.JSON(http.StatusCreated, RegisterResponse{
+		UserID:   user.ID,
+		Email:    user.Email,
+		Username: user.Username,
+	})
 }
 
 func LoginUser(c *gin.Context) {
