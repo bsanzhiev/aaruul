@@ -1,7 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
+
+	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/bsanzhiev/tsurhai/auth"
 	"github.com/bsanzhiev/tsurhai/database"
@@ -9,36 +14,105 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ищем существующего пользователя
+// если существует - проверяем что не мягко удален
+// если он есть, но мягко удален - обновляем данные
+// если его нет, создаем нового
 func RegisterUser(c *gin.Context) {
 	type RegisterResponse struct {
 		UserID   uint   `json:"userID"`
 		Email    string `json:"email"`
 		Username string `json:"username"`
 	}
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+
+	var params models.RegisterRequest
+	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		// abort?
 		c.Abort()
 		return
 	}
 
-	if err := user.HashPassword(user.Password); err != nil {
+	var existingUser models.User
+	err := database.Connect().Debug().Unscoped().Where("email = ?", params.Email).First(&existingUser).Error
+	// Юзер найден
+	if err == nil {
+		// Если мягко удален, обновляем его данные
+		if existingUser.DeletedAt.Valid {
+
+			if len(params.Password) < 9 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be longer than 9 char."})
+				return
+			}
+
+			if err := existingUser.HashPassword(params.Password); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				c.Abort()
+				return
+			}
+
+			existingUser.FirstName = params.FirstName
+			existingUser.SecondName = params.SecondName
+			existingUser.Username = params.Username
+			existingUser.DeletedAt = gorm.DeletedAt{}
+			existingUser.CreatedAt = time.Now()
+
+			// TODO Ебаная путаница с Instance и Connect - разобраться
+			if updatesErr := database.Instance.Debug().Save(&existingUser).Error; updatesErr != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": updatesErr.Error()})
+				return
+			}
+
+			c.JSON(http.StatusOK, RegisterResponse{
+				UserID:   existingUser.ID,
+				Email:    existingUser.Email,
+				Username: existingUser.Username,
+			})
+		} else {
+			// Иначе значит такой юзер уже создан
+			c.JSON(http.StatusConflict, gin.H{"error": "user already exist"})
+			c.Abort()
+			return
+		}
+
+		// Если юзер не найден, создаем нового
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		var user models.User
+
+		user.FirstName = params.FirstName
+		user.SecondName = params.SecondName
+		user.Username = params.Username
+		user.Email = params.Email
+
+		if len(params.Password) < 9 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be longer than 9 characters."})
+			return
+		}
+
+		if err := user.HashPassword(params.Password); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+
+		createErr := database.Connect().Debug().Create(&user).Error
+		if createErr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": createErr.Error()})
+			c.Abort()
+			return
+		}
+
+		c.JSON(http.StatusCreated, RegisterResponse{
+			UserID:   user.ID,
+			Email:    user.Email,
+			Username: user.Username,
+		})
+
+		// Прочие ошибки
+	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		c.Abort()
 		return
 	}
-	record := database.Instance.Create(&user)
-	if record.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": record.Error.Error()})
-		c.Abort()
-		return
-	}
-	c.JSON(http.StatusCreated, RegisterResponse{
-		UserID:   user.ID,
-		Email:    user.Email,
-		Username: user.Username,
-	})
 }
 
 func LoginUser(c *gin.Context) {

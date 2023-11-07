@@ -18,6 +18,14 @@ type User struct {
 	FirebaseToken string  `gorm:"column:firebase_token" json:"firebase_token"`
 }
 
+type RegisterRequest struct {
+	FirstName  string `json:"first_name"`
+	SecondName string `json:"second_name"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+}
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
