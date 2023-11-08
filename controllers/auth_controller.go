@@ -141,7 +141,6 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// if err := models.CheckPassword(params.Password); err != nil {
 	credentialError := user.CheckPassword(params.Password)
 	if credentialError != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
