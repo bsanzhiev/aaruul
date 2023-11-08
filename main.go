@@ -1,11 +1,13 @@
 package main
 
 import (
+	_ "context"
 	"fmt"
 	"log"
 
 	"github.com/bsanzhiev/tsurhai/controllers"
 	"github.com/bsanzhiev/tsurhai/database"
+	"github.com/bsanzhiev/tsurhai/firebaseapp"
 	"github.com/bsanzhiev/tsurhai/middlewares"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -22,6 +24,11 @@ func main() {
 
 	database.Connect()
 	database.Migrate()
+
+	// Firebase app init
+	if err := firebaseapp.InitFirebaseApp(); err != nil {
+		log.Fatalf("Error while initializing Firebase: %v", err)
+	}
 
 	app := gin.Default()
 	config := cors.DefaultConfig()
@@ -54,6 +61,7 @@ func initRouter(app *gin.Engine) {
 		api.POST("/test-token", controllers.GenerateToken)
 		api.POST("/register", controllers.RegisterUser)
 		api.POST("/login", controllers.LoginUser)
+		api.POST("/verify-token", controllers.VerifyToken)
 
 	}
 	api = app.Group("/api/v1")
